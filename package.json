@@ -1,6 +1,6 @@
 {
     "name" : "bigint",
-    "version" : "0.3.9",
+    "version" : "0.3.10",
     "description" : "Arbitrary-precision integer arithmetic using libgmp",
     "main" : "./index.js",
     "repository" : {
@@ -31,7 +31,7 @@
         "node" : ">=0.2.0"
     },
     "scripts" : {
-        "install" : "node-waf configure build",
+        "install" : "node-gyp configure build",
         "test" : "tap test/*.js"
     }
 }

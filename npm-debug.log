@@ -1,0 +1,99 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/Users/fwong/nvm/v0.8.15/bin/node',
+1 verbose cli   '/Users/fwong/nvm/v0.8.15/bin/npm',
+1 verbose cli   'install' ]
+2 info using npm@1.1.66
+3 info using node@v0.8.15
+4 verbose read json /Users/fwong/git/node-bigint/package.json
+5 verbose readDependencies using package.json deps
+6 verbose install where, deps [ '/Users/fwong/git/node-bigint', [ 'tap', 'put' ] ]
+7 verbose from cache /Users/fwong/git/node-bigint/package.json
+8 info preinstall bigint@0.3.10
+9 verbose read json /Users/fwong/git/node-bigint/node_modules/node-gyp/package.json
+10 verbose read json /Users/fwong/git/node-bigint/node_modules/put/package.json
+11 verbose read json /Users/fwong/git/node-bigint/node_modules/srand/package.json
+12 verbose read json /Users/fwong/git/node-bigint/node_modules/tap/package.json
+13 verbose from cache /Users/fwong/git/node-bigint/package.json
+14 verbose readDependencies using package.json deps
+15 verbose read json /Users/fwong/git/node-bigint/node_modules/.bin/package.json
+16 verbose from cache /Users/fwong/git/node-bigint/node_modules/node-gyp/package.json
+17 verbose from cache /Users/fwong/git/node-bigint/node_modules/put/package.json
+18 verbose from cache /Users/fwong/git/node-bigint/node_modules/srand/package.json
+19 verbose from cache /Users/fwong/git/node-bigint/node_modules/tap/package.json
+20 verbose already installed skipping tap@~0.2.5 /Users/fwong/git/node-bigint
+21 verbose already installed skipping put@~0.0.6 /Users/fwong/git/node-bigint
+22 silly resolved []
+23 info build /Users/fwong/git/node-bigint
+24 verbose from cache /Users/fwong/git/node-bigint/package.json
+25 verbose linkStuff [ false, false, false, '/Users/fwong/git' ]
+26 info linkStuff bigint@0.3.10
+27 verbose linkBins bigint@0.3.10
+28 verbose linkMans bigint@0.3.10
+29 verbose rebuildBundles bigint@0.3.10
+30 verbose rebuildBundles [ '.bin', 'node-gyp', 'put', 'srand', 'tap' ]
+31 verbose rebuild bundle /Users/fwong/git/node-bigint/node_modules/node-gyp
+32 info build /Users/fwong/git/node-bigint/node_modules/node-gyp
+33 verbose from cache /Users/fwong/git/node-bigint/node_modules/node-gyp/package.json
+34 info preinstall node-gyp@0.8.1
+35 verbose linkStuff [ false,
+35 verbose linkStuff   false,
+35 verbose linkStuff   false,
+35 verbose linkStuff   '/Users/fwong/git/node-bigint/node_modules' ]
+36 info linkStuff node-gyp@0.8.1
+37 warn prefer global node-gyp@0.8.1 should be installed with -g
+38 verbose linkBins node-gyp@0.8.1
+39 verbose link bins [ { 'node-gyp': './bin/node-gyp.js' },
+39 verbose link bins   '/Users/fwong/git/node-bigint/node_modules/.bin',
+39 verbose link bins   false ]
+40 verbose linkMans node-gyp@0.8.1
+41 verbose rebuildBundles node-gyp@0.8.1
+42 verbose rebuildBundles [ '.bin',
+42 verbose rebuildBundles   'fstream',
+42 verbose rebuildBundles   'glob',
+42 verbose rebuildBundles   'graceful-fs',
+42 verbose rebuildBundles   'minimatch',
+42 verbose rebuildBundles   'mkdirp',
+42 verbose rebuildBundles   'nopt',
+42 verbose rebuildBundles   'npmlog',
+42 verbose rebuildBundles   'osenv',
+42 verbose rebuildBundles   'request',
+42 verbose rebuildBundles   'rimraf',
+42 verbose rebuildBundles   'semver',
+42 verbose rebuildBundles   'tar',
+42 verbose rebuildBundles   'which' ]
+43 info install node-gyp@0.8.1
+44 info postinstall node-gyp@0.8.1
+45 verbose rebuild bundle /Users/fwong/git/node-bigint/node_modules/srand
+46 info build /Users/fwong/git/node-bigint/node_modules/srand
+47 verbose from cache /Users/fwong/git/node-bigint/node_modules/srand/package.json
+48 info preinstall srand@1.1.1
+49 verbose linkStuff [ false,
+49 verbose linkStuff   false,
+49 verbose linkStuff   false,
+49 verbose linkStuff   '/Users/fwong/git/node-bigint/node_modules' ]
+50 info linkStuff srand@1.1.1
+51 verbose linkBins srand@1.1.1
+52 verbose linkMans srand@1.1.1
+53 verbose rebuildBundles srand@1.1.1
+54 info install srand@1.1.1
+55 verbose unsafe-perm in lifecycle true
+56 silly exec sh "-c" "node-gyp rebuild"
+57 silly sh,-c,node-gyp rebuild,/Users/fwong/git/node-bigint/node_modules/srand spawning
+58 info srand@1.1.1 Failed to exec install script
+59 error srand@1.1.1 install: `node-gyp rebuild`
+59 error `sh "-c" "node-gyp rebuild"` failed with 1
+60 error Failed at the srand@1.1.1 install script.
+60 error This is most likely a problem with the srand package,
+60 error not with npm itself.
+60 error Tell the author that this fails on your system:
+60 error     node-gyp rebuild
+60 error You can get their info via:
+60 error     npm owner ls srand
+60 error There is likely additional logging output above.
+61 error System Darwin 11.4.0
+62 error command "/Users/fwong/nvm/v0.8.15/bin/node" "/Users/fwong/nvm/v0.8.15/bin/npm" "install"
+63 error cwd /Users/fwong/git/node-bigint
+64 error node -v v0.8.15
+65 error npm -v 1.1.66
+66 error code ELIFECYCLE
+67 verbose exit [ 1, true ]

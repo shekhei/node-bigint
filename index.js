@@ -9,6 +9,18 @@ var BigInt = cc.BigInt;
 
 module.exports = BigInt;
 
+BigInt.randB = function(size) {
+    return cc.randB(size);
+}
+
+BigInt.setRandExp = function(exp) {
+    cc.setRandExp(exp);
+}
+
+BigInt.invert = function(rhs, lhs, modolus) {
+    return cc.invert(rhs, lhs, modolus);
+}
+
 BigInt.conditionArgs = function(num, base) {
     if (typeof num !== 'string') num = num.toString(base || 10);
     
@@ -227,6 +239,17 @@ BigInt.prototype.lt = function (num) {
 BigInt.prototype.le = function (num) {
     return this.cmp(num) <= 0;
 };
+
+BigInt.prototype.divisible = function(num) {
+    if ( !num ) {
+        throw "must provide a value"
+    } else if ( num instanceof BigInt ) {
+        return this.bdivisible(num);
+    } else if ( typeof num === "number" ) {
+        return this.udivisible(num);
+    }
+    throw "only accepts BigInt or number as arg 1";
+}
 
 'and or xor'.split(' ').forEach(function (name) {
     BigInt.prototype[name] = function (num) {

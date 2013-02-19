@@ -10,57 +10,22 @@
 #include <map>
 #include <utility>
 
+#include "common.h"
+
 using namespace v8;
 using namespace node;
-using namespace std;
-
-#define REQ_STR_ARG(I, VAR)							\
-	if (args.Length()<= (I) || !args[I]->IsString())			\
-		return ThrowException(Exception::TypeError(			\
-			String::New("Argument " #I " must be a string")));	\
-	Local<String> VAR = Local<String>::Cast(args[I]);
-
-#define REQ_UTF8_ARG(I, VAR)							\
-	if (args.Length() <= (I) || !args[I]->IsString())			\
-		return ThrowException(Exception::TypeError(                     \
-			String::New("Argument " #I " must be a utf8 string"))); \
-	String::Utf8Value VAR(args[I]->ToString());
-
-#define REQ_INT32_ARG(I, VAR)							\
-	if (args.Length() <= (I) || !args[I]->IsInt32())			\
-		return ThrowException(Exception::TypeError(                     \
-			String::New("Argument " #I " must be an int32")));      \
-	int32_t VAR = args[I]->ToInt32()->Value();
-
-#define REQ_UINT32_ARG(I, VAR)							\
-	if (args.Length() <= (I) || !args[I]->IsUint32())			\
-		return ThrowException(Exception::TypeError(                     \
-			String::New("Argument " #I " must be a uint32")));      \
-	uint32_t VAR = args[I]->ToUint32()->Value();
-
-#define REQ_INT64_ARG(I, VAR)							\
-	if (args.Length() <= (I) || !args[I]->IsNumber())			\
-		return ThrowException(Exception::TypeError(                     \
-			String::New("Argument " #I " must be an int64")));      \
-	int64_t VAR = args[I]->ToInteger()->Value();
-
-#define REQ_UINT64_ARG(I, VAR)							\
-	if (args.Length() <= (I) || !args[I]->IsNumber())			\
-		return ThrowException(Exception::TypeError(                     \
-			String::New("Argument " #I " must be a uint64")));      \
-	uint64_t VAR = args[I]->ToInteger()->Value();
-
-#define WRAP_RESULT(RES, VAR)							\
-	Handle<Value> arg[1] = { External::New(*RES) };				\
-	Local<Object> VAR = constructor_template->GetFunction()->NewInstance(1, arg);
 
 class BigInt : ObjectWrap {
 	public:
 		static void Initialize(Handle<Object> target);
 		mpz_t *bigint_;
 		static Persistent<Function> js_conditioner;
-		static void SetJSConditioner(Persistent<Function> constructor);
+		static Persistent<Function> constructor;
 
+		static void SetJSConditioner(Persistent<Function> constructor);
+		static bool SetRandExp(mp_bitcnt_t num);
+		static Handle<Value> RandB(mp_bitcnt_t num);
+		static Handle<Value> Invert(const Arguments& args);
 	protected:
 		static Persistent<FunctionTemplate> constructor_template;
 
@@ -105,6 +70,8 @@ class BigInt : ObjectWrap {
 		static Handle<Value> Broot(const Arguments& args);
 		static Handle<Value> BitLength(const Arguments& args);
 		static Handle<Value> Bgcd(const Arguments& args);
+		static Handle<Value> Bdivisible(const Arguments& args);
+		static Handle<Value> Udivisible(const Arguments& args);
 };
 
 static gmp_randstate_t *		randstate	= NULL;
@@ -112,9 +79,49 @@ static gmp_randstate_t *		randstate	= NULL;
 Persistent<FunctionTemplate> BigInt::constructor_template;
 
 Persistent<Function> BigInt::js_conditioner;
+Persistent<Function> BigInt::constructor;
+
+Handle<Value> BigInt::Invert(const Arguments& args) {
+	BigInt *rhs = ObjectWrap::Unwrap<BigInt>(args[0]->ToObject());
+	HandleScope scope;
+
+	BigInt *lhs = ObjectWrap::Unwrap<BigInt>(args[1]->ToObject());
+	BigInt *modolus = ObjectWrap::Unwrap<BigInt>(args[2]->ToObject());
+
+	return scope.Close(Integer::New(mpz_invert(*rhs->bigint_, *lhs->bigint_, *modolus->bigint_)));
+}
 
 void BigInt::SetJSConditioner(Persistent<Function> constructor) {
 	js_conditioner = constructor;
+}
+
+bool BigInt::SetRandExp(mp_bitcnt_t num) {
+	if ( randstate ) {
+		gmp_randclear(*randstate);
+		free(randstate);
+	}
+	randstate = (gmp_randstate_t *) malloc(sizeof(gmp_randstate_t));
+	return 0 != gmp_randinit_lc_2exp_size(*randstate, num);
+}
+
+Handle<Value> BigInt::RandB(mp_bitcnt_t n) {
+	HandleScope scope;
+	mpz_t *res = (mpz_t *) malloc(sizeof(mpz_t));
+	mpz_init(*res);
+	
+	if(randstate == NULL) {
+		randstate = (gmp_randstate_t *) malloc(sizeof(gmp_randstate_t));
+		gmp_randinit_default(*randstate);
+	}
+	unsigned long seed = rand() + (time(NULL) * 1000) + clock();
+	gmp_randseed_ui(*randstate, seed);
+	
+	mpz_rrandomb(*res, *randstate, n);
+	WRAP_RESULT(res, result);
+  // Handle<Value> argv[1] = { result };
+  // Local<Object> instance = constructor->NewInstance(1, argv);
+
+  return scope.Close(result);
 }
 
 void BigInt::Initialize(v8::Handle<v8::Object> target) {
@@ -160,7 +167,11 @@ void BigInt::Initialize(v8::Handle<v8::Object> target) {
 	NODE_SET_PROTOTYPE_METHOD(constructor_template, "bitLength", BitLength);
 	NODE_SET_PROTOTYPE_METHOD(constructor_template, "bgcd", Bgcd);
 
+	NODE_SET_PROTOTYPE_METHOD(constructor_template, "bdivisible", Bdivisible);
+	NODE_SET_PROTOTYPE_METHOD(constructor_template, "udivisible", Udivisible);
+
 	target->Set(String::NewSymbol("BigInt"), constructor_template->GetFunction());
+  constructor = Persistent<Function>::New(t->GetFunction());
 }
 
 BigInt::BigInt (const v8::String::Utf8Value& str, uint64_t base) : ObjectWrap ()
@@ -576,10 +587,11 @@ BigInt::Brand0(const Arguments& args)
 	if(randstate == NULL) {
 		randstate = (gmp_randstate_t *) malloc(sizeof(gmp_randstate_t));
 		gmp_randinit_default(*randstate);
-		unsigned long seed = rand() + (time(NULL) * 1000) + clock();
-        	gmp_randseed_ui(*randstate, seed);
 	}
-	
+
+	unsigned long seed = rand() + (time(NULL) * 1000) + clock();
+	gmp_randseed_ui(*randstate, seed);
+
 	mpz_urandomm(*res, *randstate, *bigint->bigint_);
 
 	WRAP_RESULT(res, result);
@@ -611,6 +623,26 @@ BigInt::Nextprime(const Arguments& args)
 	WRAP_RESULT(res, result);
 
 	return scope.Close(result);
+}
+
+Handle<Value>
+BigInt::Bdivisible(const Arguments& args)
+{
+	BigInt *bigint = ObjectWrap::Unwrap<BigInt>(args.This());
+	HandleScope scope;
+	
+	BigInt *bi = ObjectWrap::Unwrap<BigInt>(args[0]->ToObject());
+
+	return scope.Close(Boolean::New(mpz_divisible_p(*bigint->bigint_, *bi->bigint_)));
+}
+
+Handle<Value>
+BigInt::Udivisible(const Arguments& args)
+{
+	BigInt *bigint = ObjectWrap::Unwrap<BigInt>(args.This());
+	HandleScope scope;
+	REQ_UINT64_ARG(0, x);
+	return scope.Close(Boolean::New(mpz_divisible_ui_p(*bigint->bigint_, x)));
 }
 
 Handle<Value>
@@ -780,6 +812,27 @@ SetJSConditioner(const Arguments& args)
 	return Undefined();
 }
 
+static Handle<Value>
+SetRandExp(const Arguments& args)
+{
+	HandleScope scope;
+	REQ_BITCNT_ARG(0, bit);
+	return Integer::New(BigInt::SetRandExp(bit));
+}
+
+static Handle<Value>
+RandB(const Arguments& args)
+{
+	REQ_BITCNT_ARG(0, bit);
+	return BigInt::RandB(bit);
+}
+
+static Handle<Value>
+Invert(const Arguments& args)
+{
+	return BigInt::Invert(args);
+}
+
 extern "C" void
 init (Handle<Object> target)
 {
@@ -787,4 +840,7 @@ init (Handle<Object> target)
 
 	BigInt::Initialize(target);
 	NODE_SET_METHOD(target, "setJSConditioner", SetJSConditioner);
+	NODE_SET_METHOD(target, "setRandExp", SetRandExp);
+	NODE_SET_METHOD(target, "randB", RandB);
+	NODE_SET_METHOD(target, "invert", Invert);
 }

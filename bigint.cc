@@ -844,3 +844,6 @@ init (Handle<Object> target)
 	NODE_SET_METHOD(target, "randB", RandB);
 	NODE_SET_METHOD(target, "invert", Invert);
 }
+
+
+NODE_MODULE(bigint, init);
